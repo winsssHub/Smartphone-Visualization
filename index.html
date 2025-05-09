@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualisasi Smartphone</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1f0036, #000428);
+      color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .chart-card {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      padding: 1rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .chart-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 20px rgba(100, 100, 255, 0.3);
+    }
+    .chart-title {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: #c3baff;
+    }
+    .section-title {
+      color: #ffffff;
+      font-size: 2.5rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body class="p-8">
+  <div class="section-title">Visualisasi Smartphone</div>
+
+  <div class="grid grid-cols-2 gap-6">
+    <!-- Bar Chart: Rata-rata Harga per Brand -->
+    <div class="chart-card">
+      <div class="chart-title">Rata-rata Harga per Brand</div>
+      <div id="avgPriceBrandChart"></div>
+      <p class="text-sm mt-2 text-gray-300">Lihat rata-rata harga tiap brand untuk membandingkan pilihan sesuai budget.</p>
+    </div>
+
+    <!-- Pie Chart: Distribusi Brand -->
+    <div class="chart-card">
+      <div class="chart-title">Distribusi Jumlah Smartphone per Brand</div>
+      <div id="brandDistributionChart"></div>
+      <p class="text-sm mt-2 text-gray-300">Pie chart ini menunjukkan seberapa banyak model yang tersedia dari masing-masing brand.</p>
+    </div>
+
+    <!-- Bar Chart: RAM Terbanyak per Brand -->
+    <div class="chart-card">
+      <div class="chart-title">RAM Tertinggi yang Tersedia per Brand</div>
+      <div id="maxRamBrandChart"></div>
+      <p class="text-sm mt-2 text-gray-300">RAM maksimum yang ditawarkan tiap brand, cocok untuk pengguna berat atau multitasking.</p>
+    </div>
+
+    <!-- Trend Line: Harga Rata-rata per RAM (sumbu X: RAM) -->
+    <div class="chart-card">
+      <div class="chart-title">Trend Harga Rata-rata Berdasarkan RAM</div>
+      <div id="priceRamTrend"></div>
+      <p class="text-sm mt-2 text-gray-300">Trend line ini menunjukkan bagaimana peningkatan RAM berpengaruh terhadap rata-rata harga.</p>
+    </div>
+  </div>
+
+  <script>
+    const data = [
+      { brand: 'Samsung', price: 300, ram: 4 },
+      { brand: 'Apple', price: 999, ram: 4 },
+      { brand: 'Xiaomi', price: 250, ram: 6 },
+      { brand: 'Oppo', price: 400, ram: 8 },
+      { brand: 'Vivo', price: 350, ram: 6 },
+      { brand: 'Realme', price: 200, ram: 4 },
+      { brand: 'Samsung', price: 450, ram: 8 },
+      { brand: 'Xiaomi', price: 270, ram: 4 },
+      { brand: 'Apple', price: 1099, ram: 6 }
+    ];
+
+    function plotAvgPricePerBrand() {
+      const brands = [...new Set(data.map(d => d.brand))];
+      const avgPrices = brands.map(brand => {
+        const items = data.filter(d => d.brand === brand);
+        return items.reduce((sum, item) => sum + item.price, 0) / items.length;
+      });
+
+      Plotly.newPlot('avgPriceBrandChart', [{
+        x: brands,
+        y: avgPrices,
+        type: 'bar',
+        marker: { color: '#7f5af0' },
+        hovertemplate: 'Brand: %{x}<br>Avg Price: %{y}<extra></extra>'
+      }], {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        xaxis: { title: 'Brand' },
+        yaxis: { title: 'Harga Rata-rata' },
+        margin: { t: 10, b: 40, l: 50, r: 10 }
+      });
+    }
+
+    function plotBrandDistribution() {
+      const brands = [...new Set(data.map(d => d.brand))];
+      const counts = brands.map(brand => data.filter(d => d.brand === brand).length);
+
+      Plotly.newPlot('brandDistributionChart', [{
+        labels: brands,
+        values: counts,
+        type: 'pie',
+        textinfo: 'label+percent',
+        insidetextorientation: 'radial',
+        marker: { colors: ['#9a67ea', '#6050dc', '#7f5af0', '#8b72f0', '#c3baff', '#4b3f72'] }
+      }], {
+        paper_bgcolor: 'transparent',
+        margin: { t: 10, b: 10, l: 10, r: 10 }
+      });
+    }
+
+    function plotMaxRamPerBrand() {
+      const brands = [...new Set(data.map(d => d.brand))];
+      const maxRams = brands.map(brand => {
+        const items = data.filter(d => d.brand === brand);
+        return Math.max(...items.map(d => d.ram));
+      });
+
+      Plotly.newPlot('maxRamBrandChart', [{
+        x: brands,
+        y: maxRams,
+        type: 'bar',
+        marker: { color: '#8b72f0' },
+        hovertemplate: 'Brand: %{x}<br>Max RAM: %{y} GB<extra></extra>'
+      }], {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        xaxis: { title: 'Brand' },
+        yaxis: { title: 'RAM Tertinggi (GB)' },
+        margin: { t: 10, b: 40, l: 50, r: 10 }
+      });
+    }
+
+    function plotRamPriceTrend() {
+      const ramGroups = [...new Set(data.map(d => d.ram))].sort((a, b) => a - b);
+      const avgPrices = ramGroups.map(ram => {
+        const group = data.filter(d => d.ram === ram);
+        return group.reduce((sum, item) => sum + item.price, 0) / group.length;
+      });
+
+      Plotly.newPlot('priceRamTrend', [{
+        x: ramGroups,
+        y: avgPrices,
+        type: 'scatter',
+        mode: 'lines+markers',
+        marker: { color: '#c3baff', size: 8 },
+        line: { shape: 'spline', width: 3 },
+        hovertemplate: 'RAM: %{x} GB<br>Avg Price: %{y}<extra></extra>'
+      }], {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        xaxis: { title: 'RAM (GB)' },
+        yaxis: { title: 'Harga Rata-rata' },
+        margin: { t: 10, b: 40, l: 50, r: 10 }
+      });
+    }
+
+    plotAvgPricePerBrand();
+    plotBrandDistribution();
+    plotMaxRamPerBrand();
+    plotRamPriceTrend();
+  </script>
+</body>
+</html>
